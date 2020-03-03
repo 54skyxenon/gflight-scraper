@@ -1,0 +1,20 @@
+extends layout
+
+block content
+    form(method='POST' action='/query')
+      div.form-group
+        label(for='origin') Origin:
+        input(type='text' placeholder='New York, NY' name='origin')
+      div.form-group
+        label(for='dest') Destination:
+        input(type='text' placeholder='Los Angeles, CA' name='dest')
+      div.form-group
+        label(for='departDate') Date of Departure:
+        input(type='date' name='departDate')
+      div.form-group
+        label(for='isRoundTrip') Round Trip?:
+        input(type='checkbox' name='isRoundTrip')
+      div.form-group
+        label(for='returnDate?') Date of Return (optional):
+        input(type='date' name='returnDate?')
+      button.btn.btn-primary(type='submit') Find My Flight
