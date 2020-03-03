@@ -1,0 +1,16 @@
+html
+    head
+        title= title
+    body
+        h1 Available Flights
+
+        a(href='../') Search Again?
+
+
+//- ul
+    for flight in flights
+    li
+    if article.title
+        a(href=`${article.link}` target='_blank')= `${article.title}`
+    else
+        a(href=`${article.link}` target='_blank')= `${article.link}`
