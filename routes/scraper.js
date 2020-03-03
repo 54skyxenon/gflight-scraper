@@ -5,45 +5,56 @@ var router = express.Router();
 
 const puppeteer = require('puppeteer');
 
+// Returns data for the best flights
 const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
 
-    // So that we can capture the entire page in the screenshot
     await page.setViewport({ width: 1920, height: 1080 });
 
     if (isRoundTrip) {
-        await page.goto(`https://www.google.com/flights#flt=${origin}.${dest}.${departDate}*${dest}.${origin}.${returnDate}
-        ;c:USD;e:1;sc:b;sd:1;t:f`,  
+        await page.goto(`https://www.google.com/flights#flt=${origin}.${dest}.${departDate}*${dest}.${origin}.${returnDate}`,  
         { waitUntil: 'networkidle0', timeout: 0 });
     } else {
-        await page.goto(`https://www.google.com/flights#flt=${origin}.${dest}.${departDate}
-        ;c:USD;e:1;sc:b;sd:1;t:f;tt:o`,  
+        await page.goto(`https://www.google.com/flights#flt=${origin}.${dest}.${departDate};tt:o`,  
         { waitUntil: 'networkidle0', timeout: 0 });
     }
 
     await page.screenshot({ path: 'screenshot.png' });
     console.log("screenshot taken!")
 
-    const scrapedData = await page.evaluate(() =>
-        Array.from(
-            document.querySelectorAll(
-                'div.gws-flights-results__best-flights'
-            )
-        )
-        /*.filter(node => node.querySelector('.graf--title'))
-        .map(link => ({
-            title: link.querySelector('.graf--title').textContent,
-            link: link.getAttribute('data-action-value')
-        }))*/
-    );
+    const scrapedData = await page.evaluate(() => {
+        let flights = Array.from(document.querySelectorAll('ol.gws-flights-results__result-list:nth-child(3) > li'));
+        
+        const prices = flights.map(flight => {
+            return flight.querySelector('div:nth-child(1) > div:nth-child(1) > div:nth-child(2) ' +
+                                        '> div:nth-child(2) > div:nth-child(1) > div:nth-child(6) ' +
+                                        '> div:nth-child(1)')
+            .textContent
+            .toString()
+            .trim()
+        });
 
-    console.log(scrapedData)
+        const durations = flights.map(flight => {
+            return flight.querySelector('div:nth-child(1) > div:nth-child(1) > div:nth-child(2) ' +
+                                        '> div:nth-child(2) > div:nth-child(1) > div:nth-child(3) ' +
+                                        '> div:nth-child(1)')
+            .textContent
+            .toString()
+            .trim()
+        });
+
+        return [prices, durations];
+    });
+
+    console.log("The prices are: " + scrapedData[0].toString())
+    console.log("The travel durations are: " + scrapedData[1].toString())
 
     await browser.close()
     return scrapedData
 }
 
+// Does data validation, receives the data, and renders it
 router.post('/', (req, res) => {
     const { origin, dest, departDate, returnDate, isRoundTrip } = req.body;
 
