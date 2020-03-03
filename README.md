@@ -18,8 +18,8 @@ Query {
 This scrapes for both a one way flights and round trip flights, recording the following information:
 
 * Price :heavy_check_mark:
-* Total travel duration
-* Number of stops
+* Total travel duration :heavy_check_mark:
+* Number of stops :heavy_check_mark:
 * Information about each stop:
   - IATA codes of origin and destination airports
   - Airline operator

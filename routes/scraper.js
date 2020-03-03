@@ -44,11 +44,22 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
             .trim()
         });
 
-        return [prices, durations];
+        const stopCounts = flights.map(flight => {
+            const stopCount = flight.querySelector('div:nth-child(1) > div:nth-child(1) > ' +
+                                                'div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > ' + 
+                                                'div:nth-child(4) > div:nth-child(1) > div:nth-child(1) > ' + 
+                                                'div:nth-child(1) > span:nth-child(1)')
+            .textContent
+            .toString()
+            return stopCount === "Nonstop" ? '0 stops' : stopCount
+        });
+
+        return [prices, durations, stopCounts];
     });
 
     console.log("The prices are: " + scrapedData[0].toString())
     console.log("The travel durations are: " + scrapedData[1].toString())
+    console.log("The number of stops are: " + scrapedData[2].toString())
 
     await browser.close()
     return scrapedData
