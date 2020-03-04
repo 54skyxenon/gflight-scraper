@@ -29,56 +29,53 @@ const clickDropdowns = async (page) => {
 
 // Scrapes Google Flights data (for only the best flights)
 const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage()
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
 
-    await page.goto(await getUrl(origin, dest, departDate, returnDate, isRoundTrip), { waitUntil: 'networkidle0', timeout: 0 })
-
-    await clickDropdowns(page);
+    await page.goto(await getUrl(origin, dest, departDate, returnDate, isRoundTrip),
+        { waitUntil: 'networkidle0', timeout: 0 });
 
     // Sanity check - show us what we have so far
     await page.screenshot({ path: 'screenshot.png' });
     console.log('Screenshot taken!');
 
+    await clickDropdowns(page);
+
     const scrapedData = await page.evaluate(() => {
         // get the elements in the ordered list of best flights
-        let flights = Array.from(document.querySelectorAll('ol.gws-flights-results__result-list:nth-child(3) > li'));
+        let flights = Array.from(
+            document.querySelectorAll('ol.gws-flights-results__result-list:nth-child(3) > li')
+        );
 
         // get the prices
         const prices = flights.map(flight => {
-            return flight.querySelector('div:nth-child(1) > div:nth-child(1) > div:nth-child(2) ' +
-                '> div:nth-child(2) > div:nth-child(1) > div:nth-child(6) ' +
-                '> div:nth-child(1)')
+            return flight
+                .getElementsByClassName('gws-flights-results__itinerary-price')[0]
                 .textContent
-                .toString()
                 .trim()
         });
 
         // get the trip durations
         const durations = flights.map(flight => {
-            return flight.querySelector('div:nth-child(1) > div:nth-child(1) > div:nth-child(2) ' +
-                '> div:nth-child(2) > div:nth-child(1) > div:nth-child(3) ' +
-                '> div:nth-child(1)')
+            return flight
+                .getElementsByClassName('gws-flights-results__duration')[0]
                 .textContent
-                .toString()
                 .trim()
         });
 
         // get how many stops there are
         const stopCounts = flights.map(flight => {
-            return flight.querySelector('div:nth-child(1) > div:nth-child(1) > ' +
-                'div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > ' +
-                'div:nth-child(4) > div:nth-child(1) > div:nth-child(1) > ' +
-                'div:nth-child(1) > span:nth-child(1)')
+            return flight
+                .getElementsByClassName('gws-flights-results__stops')[0]
                 .textContent
-                .toString()
+                .trim()
         });
 
         /**
-         * -------------------------------------------
+         * -------------------------------------------------------------------
          * Scrape detailed stop info, which includes:
-         * -------------------------------------------
+         * -------------------------------------------------------------------
          * IATA codes of origin and destination airports
          * Airline operator
          * Flight Number
@@ -89,10 +86,12 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
          */
 
         const stops = flights.map(flight => {
+            // Get each flight
             const stopInfoSelectors = Array.from(flight.getElementsByClassName('gws-flights-results__leg'));
 
             let stopInfos = [];
 
+            // Get each stop for a flight
             stopInfoSelectors.forEach(stopInfoSelector => {
                 const IATA = stopInfoSelector
                     .getElementsByClassName('gws-flights-results__iata-code');
@@ -123,11 +122,21 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
                     .textContent
                     .trim();
 
-                stopInfos.push([IATA[0].textContent, IATA[1].textContent, airline, flightNumber, departureTime, arrivalTime, travelDuration]);
+                stopInfo = {
+                    'origin': IATA[0].textContent,
+                    'dest': IATA[1].textContent,
+                    'airline': airline,
+                    'flightNumber': flightNumber,
+                    'departureTime': departureTime,
+                    'arrivalTime': arrivalTime,
+                    'duration': travelDuration
+                };
+
+                stopInfos.push(JSON.stringify(stopInfo));
             });
 
             return stopInfos;
-        })
+        });
 
         return [prices, durations, stopCounts, stops];
     });
