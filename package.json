@@ -17,5 +17,8 @@
     "nodemon": "^2.0.2",
     "pug": "2.0.0-beta11",
     "puppeteer": "^2.1.1"
+  },
+  "devDependencies": {
+    "jest": "^25.1.0"
   }
 }
