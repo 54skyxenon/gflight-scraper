@@ -1019,7 +1019,7 @@ mkdirp@0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mongodb@3.5.4:
+mongodb@3.5.4, mongodb@^3.5.4:
   version "3.5.4"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.5.4.tgz#f7609cfa9f8c56c35e844b4216ddc3a1b1ec5bef"
   integrity sha512-xGH41Ig4dkSH5ROGezkgDbsgt/v5zbNUwE3TcFsSbDc6Qn3Qil17dhLsESSDDPTiyFDCPJRpfd4887dtsPgKtA==
