@@ -21,9 +21,9 @@ This scrapes for both a one way flights and round trip flights, recording the fo
 * Total travel duration :heavy_check_mark:
 * Number of stops :heavy_check_mark:
 * Information about each stop:
-  - IATA codes of origin and destination airports
-  - Airline operator
-  - Flight Number
-  - Departure time
-  - Arrival time
-  - Travel duration
+  - IATA codes of origin and destination airports :heavy_check_mark:
+  - Airline operator :heavy_check_mark:
+  - Flight Number :heavy_check_mark:
+  - Departure time :heavy_check_mark:
+  - Arrival time :heavy_check_mark:
+  - Travel duration :heavy_check_mark:
