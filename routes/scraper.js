@@ -29,21 +29,8 @@ const clickDropdowns = async (page) => {
     });
 }
 
-// Scrapes Google Flights data (for only the best flights)
-const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
-
-    await page.goto(await getUrl(origin, dest, departDate, returnDate, isRoundTrip),
-        { waitUntil: 'networkidle0', timeout: 0 });
-
-    // Sanity check - show us what we have so far
-    await page.screenshot({ path: 'screenshot.png' });
-
-    await clickDropdowns(page);
-
-    const scrapedData = await page.evaluate(() => {
+const getScrapedData = async (page) => {
+    return await page.evaluate(() => {
         // get the elements in the ordered list of best flights
         let flights = Array.from(
             document.querySelectorAll('ol.gws-flights-results__result-list:nth-child(3) > li')
@@ -142,41 +129,50 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
         // Give back all the info associated for the trip in an array
         return [prices, durations, stopCounts, stops];
     });
-
-    db.addFlights(origin, dest, departDate, returnDate, isRoundTrip, scrapedData);
-    await browser.close();
-
-    return scrapedData;
 }
 
 // Do we need to re-run the scraper?
 const needsScraping = async (origin, dest, departDate, returnDate, isRoundTrip) => {
-    // mongoose doesn't cast undefined to false, so this is necessary
-    isRoundTrip = isRoundTrip ? true : false;
-
-    const queryResult = await db.connection.db
-        .collection('queries')
-        .find({
-            'origin': origin,
-            'dest': dest,
-            'depart_date': departDate,
-            'return_date': returnDate,
-            'is_round_trip': isRoundTrip
-        })
-        .toArray();
+    const queryResult = await db.getQuery(origin, dest, departDate, returnDate, isRoundTrip);
 
     // Do a new scrape if it's over a day or hasn't been done yet
     if (queryResult.length == 0) {
         return true;
     } else {
-        console.log(queryResult[queryResult.length - 1].updatedAt);
-        return ((new Date().getTime() - Date.parse(queryResult[queryResult.length - 1].updatedAt)) > 86400000);
+        return ((new Date().getTime() - Date.parse(queryResult[0].updatedAt)) > 86400000);
     }
+}
+
+// Scrapes Google Flights data (for only the best flights)
+const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
+
+    await page.goto(await getUrl(origin, dest, departDate, returnDate, isRoundTrip),
+        { waitUntil: 'networkidle0', timeout: 0 });
+
+    // Sanity check - show us what we have so far
+    await page.screenshot({ path: 'screenshot.png' });
+    await clickDropdowns(page);
+
+    if (await needsScraping(origin, dest, departDate, returnDate, isRoundTrip)) {
+        await db.addFlights(origin, dest, departDate, returnDate, isRoundTrip, await getScrapedData(page));
+        console.log('Did a fresh scrape!');
+    } else {
+        console.log('Last updated less than a day ago, retrieving from cache...');
+    }
+
+    // Get the trips associated with this scrape
+    const scrapedData = await db.getTrips(origin, dest, departDate, returnDate, isRoundTrip);
+
+    await browser.close();
+    return scrapedData;
 }
 
 // Renders the scraped data
 router.post('/', async (req, res, next) => {
-    const { origin, dest, departDate, returnDate, isRoundTrip } = req.body;
+    let { origin, dest, departDate, returnDate, isRoundTrip } = req.body;
 
     // Data validation
     if (!origin || !dest || !departDate) {
@@ -195,27 +191,20 @@ router.post('/', async (req, res, next) => {
         return next();
     }
 
-    // Now do the scraping
-    if (await needsScraping(origin, dest, departDate, returnDate, isRoundTrip)) {
-        const flights = scrape(origin, dest, departDate, returnDate, isRoundTrip)
-            .then(data => resolve(data))
-            .catch(err => reject('Scraping failed, here\'s what went wrong: ' + err.toString()));
+    // Mongoose doesn't cast undefined to false, so this is necessary
+    isRoundTrip = isRoundTrip ? true : false;
 
-        res.render("results", {
-            title: "Available Flights",
-            heading: "Results (new)",
-            flights: flights
-        });
+    const flights = await scrape(origin, dest, departDate, returnDate, isRoundTrip)
+        .then(data => { return data })
+        .catch(err => console.log('Scraping failed, here\'s what went wrong: ' + err.toString()));
 
-        console.log("Did a fresh scrape!");
-    } else {
-        res.render("results", {
-            title: "Available Flights",
-            heading: "Results (cached)"
-        });
-
-        console.log("Wasn't scraped because it hasn't been a day since you made that request.");
-    }
+    res.render("results", {
+        title: "Available Flights",
+        heading: `Best results for ${origin} to ${dest}`,
+        subheading: `${isRoundTrip ? "(Round Trip) Departing " + departDate + ", returning " + returnDate :
+            "(One Way) Departing " + departDate}`,
+        flights: flights
+    });
 });
 
 module.exports = router;
