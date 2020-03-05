@@ -1,9 +1,7 @@
 // db.js - Performs CRUD operations for flight data
 
 require('dotenv').config()
-
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
 // Set up default mongoose connection
 const uri = `mongodb+srv://${process.env.USERNAME}:${process.env.PASSWORD}@cluster0-78xbv.mongodb.net/Flights?retryWrites=true&w=majority`;
@@ -20,20 +18,43 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
     // populate an array with trips we've gotten for our query
     let trips = []
 
-    // mongoose does not cast undefined to false, so this is necessary to get added as a field
-    isRoundTrip = isRoundTrip ? true : false;
-
     for (var tripIndex = 0; tripIndex < flights[0].length; tripIndex++) {
-        const trip = new Trip({
-            price: flights[0][tripIndex].toString(),
-            duration: flights[1][tripIndex].toString(),
-            no_stops: flights[2][tripIndex].toString(),
-            stops: [] // TODO
+        flights[3][tripIndex].forEach((stop, index) => {
+            flights[3][tripIndex][index] = JSON.parse(flights[3][tripIndex][index])
         });
 
-        trip.save();
-        trips.push(trip._id);        
+        const trip = new Trip({
+            price: flights[0][tripIndex].toString().replace(/\s.*/, ''),
+            duration: flights[1][tripIndex].toString(),
+            no_stops: flights[2][tripIndex].toString(),
+            stops: flights[3][tripIndex]
+        });
+
+        await trip.save();
+        trips.push(trip._id);
     }
+
+    // TODO: make sure there's only ONE entry for a given origin/dest/depart/arrival combination
+
+    /**
+     * const queryResult = await db.connection.db
+        .collection('queries')
+        .find({
+            'origin': origin,
+            'dest': dest,
+            'depart_date': departDate,
+            'return_date': returnDate,
+            'is_round_trip': isRoundTrip
+        })
+        .toArray();
+
+    // Do a new scrape if it's over a day or hasn't been done yet
+    if (queryResult.length == 0) {
+        return true;
+    } else {
+        return ((new Date().getTime() - Date.parse(queryResult[0].updatedAt)) > 86400000);
+    }
+     */
 
     const query = new Query({
         origin: origin,
@@ -44,9 +65,36 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
         trips: trips
     });
 
-    query.save();
+    await query.save();
     console.log('Successfully saved to DB!');
 }
 
+// Returns the query containing the trips
+const getQuery = async (origin, dest, departDate, returnDate, isRoundTrip) => {
+    return await db.db
+        .collection('queries')
+        .find({
+            'origin': origin,
+            'dest': dest,
+            'depart_date': departDate,
+            'return_date': returnDate,
+            'is_round_trip': isRoundTrip
+        })
+        .toArray();
+}
+
+// Returns the trips associated with a query
+const getTrips = async (origin, dest, departDate, returnDate, isRoundTrip) => {
+    const queryData = await getQuery(origin, dest, departDate, returnDate, isRoundTrip);
+
+    return await db.db
+        .collection('trips')
+        .find({
+            '_id': { '$in': queryData[0].trips }
+        })
+        .toArray();
+}
+
 exports.addFlights = addFlights;
-exports.connection = db;
+exports.getQuery = getQuery;
+exports.getTrips = getTrips;
