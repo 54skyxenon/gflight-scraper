@@ -5,6 +5,8 @@ var router = express.Router();
 
 const puppeteer = require('puppeteer');
 
+const db = require('./db');
+
 // Returns the appropriate URL to scrape
 const getUrl = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     let baseUrl = `https://www.google.com/flights#flt=`
@@ -138,30 +140,30 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
             return stopInfos;
         });
 
+        // Give back all the info associated for the trip in an array
         return [prices, durations, stopCounts, stops];
     });
 
-    console.log("The prices are: " + scrapedData[0].toString());
-    console.log("The travel durations are: " + scrapedData[1].toString());
-    console.log("The number of stops are: " + scrapedData[2].toString());
-    console.log("The stops themselves are: " + scrapedData[3].toString());
+    db.addFlights(scrapedData);
 
     await browser.close();
     return scrapedData;
 }
 
-// Does data validation, receives the data, and renders it
+// Renders the scraped data
 router.post('/', (req, res) => {
     const { origin, dest, departDate, returnDate, isRoundTrip } = req.body;
 
+    // Data validation
     if (!origin || !dest || !departDate) {
-        res.render("results", { title: "Results" });
+        res.render("results", { title: "Results", error: "You did not specify an origin, destination, or depature date!" });
     }
 
     if (isRoundTrip && !returnDate) {
-        res.render("results", { title: "Results" });
+        res.render("results", { title: "Results", error: "You did not specify a return date for this round trip flight!" });
     }
 
+    // Now do the scraping
     const flights = new Promise((resolve, reject) => {
         scrape(origin, dest, departDate, returnDate, isRoundTrip)
             .then(data => {
@@ -170,6 +172,7 @@ router.post('/', (req, res) => {
             .catch(err => reject('Google Flight scrape failed'))
     })
 
+    // Pass in the data objects
     Promise.all(flights)
         .then(data => {
             res.render('results', { title: "Results", data: { flights: flights } })
