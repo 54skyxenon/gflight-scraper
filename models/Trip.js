@@ -10,11 +10,11 @@ const Trip = new Schema({
     stops: [{
         origin: String,
         dest: String,
-        airline_operator: String,
-        flight_number: String,
-        departure_time: String,
-        arrival_time: String,
-        travel_duration: String
+        airline: String,
+        flightNumber: String,
+        departureTime: String,
+        arrivalTime: String,
+        duration: String
     }]
 });
 
