@@ -9,8 +9,8 @@ require('../models/Trip');
 const Query = new Schema({
     origin: String,
     dest: String,
-    depart_date: Date,
-    return_date: Date,
+    depart_date: String,
+    return_date: String,
     is_round_trip: Boolean,
     trips: [{ type: Schema.Types.ObjectId, ref: 'Trip' }]
 }, { timestamps: true });
