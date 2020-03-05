@@ -2,13 +2,18 @@ extends layout
 
 block content
     h1= heading
+    h2= subheading
+
+    ul
+        each flight in flights
+            li
+                div
+                    h3 Price: #{flight.price}
+                    p Total Duration: #{flight.duration}
+                    p #{flight.no_stops}
+                    ul
+                        each stop in flight.stops
+                            li
+                                h5 #{stop.origin} to #{stop.dest} | #{stop.airline} | #{stop.flightNumber} | #{stop.departureTime} to #{stop.arrivalTime} (#{stop.duration})
+
     a(href='../') Search Again?
-
-
-//- ul
-    for flight in flights
-    li
-    if article.title
-        a(href=`${article.link}` target='_blank')= `${article.title}`
-    else
-        a(href=`${article.link}` target='_blank')= `${article.link}`
