@@ -5,31 +5,32 @@ var router = express.Router();
 
 const scraper = require('../controllers/scraper');
 
-// Renders the scraped data
-router.post('/', async (req, res, next) => {
-    let { origin, dest, departDate, returnDate, isRoundTrip } = req.body;
-
-    // Data validation
+// Validate all the inputs
+const validate = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     if (!origin || !dest || !departDate) {
-        res.render("error", {
-            title: "Error",
-            message: "You did not specify either an origin, destination, or depature date!"
-        });
-        return next();
+        return "You did not specify either an origin, destination, or depature date!";
     }
 
     if (isRoundTrip && !returnDate) {
-        res.render("error", {
-            title: "Error",
-            message: "You did not specify a return date for this round trip flight!"
-        });
-        return next();
+        return "You did not specify a return date for this round trip flight!";
     }
 
     if (returnDate && (returnDate <= departDate)) {
+        return "Your return date must be after your departure date!";
+    }
+}
+
+// Renders the scraped data, responding to a POST request
+router.post('/', async (req, res, next) => {
+    let { origin, dest, departDate, returnDate, isRoundTrip } = req.body;
+
+    // Do data validation
+    const possibleError = await validate(origin, dest, departDate, returnDate, isRoundTrip);
+    
+    if (possibleError) {
         res.render("error", {
             title: "Error",
-            message: "Your return date must be after your departure date!"
+            message: possibleError
         });
         return next();
     }

@@ -28,6 +28,7 @@ const clickDropdowns = async (page) => {
     });
 }
 
+// Returns all the relevant scraped data
 const getScrapedData = async (page) => {
     return await page.evaluate(() => {
         // get the elements in the ordered list of best flights
@@ -76,14 +77,12 @@ const getScrapedData = async (page) => {
          * Travel duration
          * 
          */
-
         const stops = flights.map(flight => {
-            // Get each flight
+            // Get the list of flights
             const stopInfoSelectors = Array.from(flight.getElementsByClassName('gws-flights-results__leg'));
-
             let stopInfos = [];
 
-            // Get each stop for a flight
+            // Get each stop for a flight and fill stopInfos
             stopInfoSelectors.forEach(stopInfoSelector => {
                 const IATA = stopInfoSelector
                     .getElementsByClassName('gws-flights-results__iata-code');
@@ -147,12 +146,13 @@ const needsScraping = async (origin, dest, departDate, returnDate, isRoundTrip) 
     }
 }
 
-// Scrapes Google Flights data (for only the best flights)
+// Scrapes Google Flights data for the best flights
 const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
 
+    // Visit the URL
     await page.goto(await getUrl(origin, dest, departDate, returnDate, isRoundTrip),
         { waitUntil: 'networkidle0', timeout: 0 });
 
@@ -160,6 +160,7 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     await page.screenshot({ path: 'screenshot.png' });
     await clickDropdowns(page);
 
+    // Do we actually need to scrape again, or is it cached?
     if (await needsScraping(origin, dest, departDate, returnDate, isRoundTrip)) {
         await db.addFlights(origin, dest, departDate, returnDate, isRoundTrip, await getScrapedData(page));
         console.log('Did a fresh scrape!');

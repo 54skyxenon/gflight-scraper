@@ -18,7 +18,7 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
     // populate an array with trips we've gotten for our query
     let trips = []
 
-    // add in all the trips in an array and insert into collection
+    // add in all the trips in an array and insert each into collection
     for (var tripIndex = 0; tripIndex < flights[0].length; tripIndex++) {
         flights[3][tripIndex].forEach((stop, index) => {
             flights[3][tripIndex][index] = JSON.parse(flights[3][tripIndex][index])
