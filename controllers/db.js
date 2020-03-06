@@ -18,6 +18,7 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
     // populate an array with trips we've gotten for our query
     let trips = []
 
+    // add in all the trips in an array and insert into collection
     for (var tripIndex = 0; tripIndex < flights[0].length; tripIndex++) {
         flights[3][tripIndex].forEach((stop, index) => {
             flights[3][tripIndex][index] = JSON.parse(flights[3][tripIndex][index])
@@ -57,8 +58,17 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
         });
 
         await query.save();
+        
         console.log('Successfully added record to DB!');
-    } else {
+    }
+    // Otherwise, update the trips for that document and drop the old trips
+    else {
+        await db.db
+            .collection('trips')
+            .deleteMany({
+                '_id': { $in: queryResult[0].trips }
+            });
+
         await db.db
             .collection('queries')
             .updateOne({
@@ -69,6 +79,7 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
                     updatedAt: new Date()
                 }
             });
+
         console.log('Successfully updated record in DB!');
     }
 }
@@ -87,16 +98,16 @@ const getQuery = async (origin, dest, departDate, returnDate, isRoundTrip) => {
         .toArray();
 }
 
-// Returns the trips associated with a query
+// Returns the trips and the last time the scraper was runs associated with a query
 const getTrips = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     const queryData = await getQuery(origin, dest, departDate, returnDate, isRoundTrip);
 
-    return await db.db
+    return [await db.db
         .collection('trips')
         .find({
             '_id': { '$in': queryData[0].trips }
         })
-        .toArray();
+        .toArray(), queryData[0].updatedAt];
 }
 
 exports.addFlights = addFlights;

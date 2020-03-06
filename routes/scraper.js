@@ -1,4 +1,4 @@
-// routes/scraper.js - Handles data validation routing for the scraper
+// routes/scraper.js - Handles data validation and routing for the scraper
 
 var express = require('express');
 var router = express.Router();
@@ -26,7 +26,7 @@ router.post('/', async (req, res, next) => {
         return next();
     }
 
-    // Mongoose doesn't cast undefined to false, so this is necessary
+    // Mongoose unfortunately doesn't cast undefined to false, so this is necessary
     isRoundTrip = isRoundTrip ? true : false;
 
     const flights = await scraper(origin, dest, departDate, returnDate, isRoundTrip)
@@ -38,7 +38,8 @@ router.post('/', async (req, res, next) => {
         heading: `Best results for ${origin} to ${dest}`,
         subheading: `${isRoundTrip ? "(Round Trip) Departing " + departDate + ", returning " + returnDate :
             "(One Way) Departing " + departDate}`,
-        flights: flights
+        flights: flights[0],
+        lastUpdatedAt: flights[1]
     });
 });
 
