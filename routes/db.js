@@ -34,10 +34,7 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
         trips.push(trip._id);
     }
 
-    // TODO: make sure there's only ONE entry for a given origin/dest/depart/arrival combination
-
-    /**
-     * const queryResult = await db.connection.db
+    const queryResult = await db.db
         .collection('queries')
         .find({
             'origin': origin,
@@ -50,23 +47,30 @@ const addFlights = async (origin, dest, departDate, returnDate, isRoundTrip, fli
 
     // Do a new scrape if it's over a day or hasn't been done yet
     if (queryResult.length == 0) {
-        return true;
+        const query = new Query({
+            origin: origin,
+            dest: dest,
+            depart_date: departDate.toString(),
+            return_date: returnDate.toString(),
+            is_round_trip: isRoundTrip,
+            trips: trips
+        });
+
+        await query.save();
+        console.log('Successfully added record to DB!');
     } else {
-        return ((new Date().getTime() - Date.parse(queryResult[0].updatedAt)) > 86400000);
+        await db.db
+            .collection('queries')
+            .updateOne({
+                '_id': queryResult[0]._id
+            }, {
+                $set: {
+                    trips: trips,
+                    updatedAt: new Date()
+                }
+            });
+        console.log('Successfully updated record in DB!');
     }
-     */
-
-    const query = new Query({
-        origin: origin,
-        dest: dest,
-        depart_date: departDate.toString(),
-        return_date: returnDate.toString(),
-        is_round_trip: isRoundTrip,
-        trips: trips
-    });
-
-    await query.save();
-    console.log('Successfully saved to DB!');
 }
 
 // Returns the query containing the trips
