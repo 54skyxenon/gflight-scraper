@@ -1,4 +1,4 @@
-// index.js - The homepage, where queries for flights can be made
+// routes/index.js - routing for the homepage, where queries for flights can be made
 
 var express = require('express');
 var router = express.Router();

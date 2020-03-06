@@ -1,4 +1,4 @@
-// db.js - Performs CRUD operations for flight data
+// controllers/db.js - Performs CRUD operations for flight data
 
 require('dotenv').config()
 const mongoose = require('mongoose');
