@@ -35,6 +35,11 @@ const getScrapedData = async (page) => {
             document.querySelectorAll('ol.gws-flights-results__result-list:nth-child(3) > li')
         );
 
+        // handle the possibility that no flights showed up
+        if (!flights) {
+            reject("No flights were found.")
+        }
+
         // get the prices
         const prices = flights.map(flight => {
             return flight

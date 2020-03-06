@@ -26,21 +26,37 @@ router.post('/', async (req, res, next) => {
         return next();
     }
 
+    if (returnDate && (returnDate <= departDate)) {
+        res.render("error", {
+            title: "Error",
+            message: "Your return date must be after your departure date!"
+        });
+        return next();
+    }
+
     // Mongoose unfortunately doesn't cast undefined to false, so this is necessary
     isRoundTrip = isRoundTrip ? true : false;
 
-    const flights = await scraper(origin, dest, departDate, returnDate, isRoundTrip)
-        .then(data => { return data })
-        .catch(err => console.log('Scraping failed, here\'s what went wrong: ' + err.toString()));
-
-    res.render("results", {
-        title: "Available Flights",
-        heading: `Best results for ${origin} to ${dest}`,
-        subheading: `${isRoundTrip ? "(Round Trip) Departing " + departDate + ", returning " + returnDate :
-            "(One Way) Departing " + departDate}`,
-        flights: flights[0],
-        lastUpdatedAt: flights[1]
-    });
+    // Render the scraper's response
+    await scraper(origin, dest, departDate, returnDate, isRoundTrip)
+        .then(data => {
+            res.render("results", {
+                title: "Available Flights",
+                heading: `Best results for ${origin} to ${dest}`,
+                subheading: `${isRoundTrip ? "(Round Trip) Departing " + departDate + ", returning " + returnDate :
+                    "(One Way) Departing " + departDate}`,
+                flights: data[0],
+                lastUpdatedAt: data[1]
+            });
+        })
+        .catch(err => {
+            console.log('Scraping failed, there were probably no results');
+            res.render("error", {
+                title: "Error",
+                message: "Your query returned no results."
+            });
+            return next();
+        });
 });
 
 module.exports = router;
