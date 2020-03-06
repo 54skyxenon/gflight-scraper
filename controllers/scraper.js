@@ -1,7 +1,10 @@
-// controllers/scraper.js - Controls the actual logic for the scraper
+// controllers/scraper.js - Controls the business logic for the scraper
 
 const puppeteer = require('puppeteer');
 const db = require('./db');
+
+// How long results should be cached
+const REFRESH_RATE = 3600000;
 
 // Returns the appropriate URL to scrape
 const getUrl = async (origin, dest, departDate, returnDate, isRoundTrip) => {
@@ -131,11 +134,11 @@ const getScrapedData = async (page) => {
 const needsScraping = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     const queryResult = await db.getQuery(origin, dest, departDate, returnDate, isRoundTrip);
 
-    // Do a new scrape if it's over a day or hasn't been done yet
+    // Do a new scrape if it's over the refresh rate or hasn't been done yet
     if (queryResult.length == 0) {
         return true;
     } else {
-        return ((new Date().getTime() - Date.parse(queryResult[0].updatedAt)) > 86400000);
+        return ((new Date().getTime() - Date.parse(queryResult[0].updatedAt)) > REFRESH_RATE);
     }
 }
 
@@ -156,10 +159,10 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
         await db.addFlights(origin, dest, departDate, returnDate, isRoundTrip, await getScrapedData(page));
         console.log('Did a fresh scrape!');
     } else {
-        console.log('Last updated less than a day ago, retrieving from cache...');
+        console.log('Last updated less than an hour ago, retrieving from cache...');
     }
 
-    // Get the trips associated with this scrape
+    // Get the trips and time of last update associated with this scrape
     const scrapedData = await db.getTrips(origin, dest, departDate, returnDate, isRoundTrip);
 
     await browser.close();

@@ -1,4 +1,4 @@
-// Trip.js - represents the information for a complete trip
+// models/Trip.js - represents the information for a complete trip
 
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;

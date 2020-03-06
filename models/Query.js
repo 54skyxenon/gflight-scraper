@@ -1,4 +1,4 @@
-// Query.js - represents a query and the trips associated with it
+// models/Query.js - represents a query and the trips associated with it
 
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
