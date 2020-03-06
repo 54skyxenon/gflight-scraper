@@ -1,4 +1,4 @@
-<img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Google_Flights_logo.svg/1280px-Google_Flights_logo.svg.png" />
+<img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Google_Flights_logo.svg/1280px-Google_Flights_logo.svg.png" height="40" width="250" />
 
 A simple scraper built in Express for Google Flights data using the Puppeteer library. The database is hosted on a remote MongoDB Atlas instance. If you need the `.env` file that contains the connection credentials, contact me personally. After you've run `yarn add` to install all the dependencies, feel free to try it out with `yarn start`. Tests written in the Jest framework are included for the controllers, models, and routing - run them with `yarn test`.
 
