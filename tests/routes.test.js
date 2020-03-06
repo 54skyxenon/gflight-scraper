@@ -105,6 +105,28 @@ describe('scraper route', () => {
         done();
     });
 
+    it('departure date in the past gives an error', async (done) => {
+        const response = JSON.parse(
+            JSON.stringify(
+                await request(app)
+                    .post('/scraper')
+                    .send({
+                        origin: 'JFK', 
+                        dest: 'LAX', 
+                        departDate: '2018-05-04',
+                        returnDate: '',
+                        isRoundTrip: null
+                    })
+            )
+        );
+        
+        expect(response.text
+            .includes("You can't pick a departure date in the past!"))
+            .toBe(true);
+
+        done();
+    });
+
     it('one way trip succeeds #1', async (done) => {
         const response = JSON.parse(
             JSON.stringify(

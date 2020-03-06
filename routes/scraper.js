@@ -11,6 +11,10 @@ const validate = async (origin, dest, departDate, returnDate, isRoundTrip) => {
         return "You did not specify either an origin, destination, or depature date!";
     }
 
+    if (Date.parse(departDate) - Date.parse(new Date()) < 0) {
+        return "You can't pick a departure date in the past!";
+    }
+
     if (isRoundTrip && !returnDate) {
         return "You did not specify a return date for this round trip flight!";
     }
@@ -26,7 +30,7 @@ router.post('/', async (req, res, next) => {
 
     // Do data validation
     const possibleError = await validate(origin, dest, departDate, returnDate, isRoundTrip);
-    
+
     if (possibleError) {
         res.render("error", {
             title: "Error",
@@ -39,7 +43,8 @@ router.post('/', async (req, res, next) => {
     isRoundTrip = isRoundTrip ? true : false;
 
     // Render the scraper's response
-    await scraper(origin, dest, departDate, returnDate, isRoundTrip)
+    await scraper
+        .scrape(origin, dest, departDate, returnDate, isRoundTrip)
         .then(data => {
             res.render("results", {
                 title: "Available Flights",
