@@ -2,6 +2,8 @@
 
 A simple scraper built in Node for Google Flights data using the Puppeteer library. The database is hosted on a remote MongoDB Atlas instance. If you need the `.env` file that contains the connection credentials, contact me personally. After you've run `yarn add` to install all the dependencies, feel free to try it out with `yarn start`.
 
+![Sample](sample.gif)
+
 Given a query in the following format:
 
 ```
@@ -14,7 +16,7 @@ Query {
 }
 ```
 
-This scrapes for both a one way flights and round trip flights, storing the following information in a queryable database. This scraper caches query results for a day before it can be run again on the same query.
+This scrapes for both a one way flights and round trip flights, storing the following information in a queryable database. Results are cached for an hour before the scraper can be run again on the same query.
 
 * Price :heavy_check_mark:
 * Total travel duration :heavy_check_mark:
