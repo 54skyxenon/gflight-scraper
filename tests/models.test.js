@@ -9,7 +9,7 @@ const Trip = require('../models/Trip');
 
 const query1Trips = [
     new Trip({
-        _id: 'testQuery1Trip1',
+        _id: '5e62dc3bf6a79f2b7d8f33e1',
         price: '$129',
         duration: '5h 45m',
         no_stops: 'Nonstop',
@@ -24,7 +24,7 @@ const query1Trips = [
         }]
     }),
     new Trip({
-        _id: 'testQuery1Trip2',
+        _id: '5e62dc3bf6a79f2b7d8f33e2',
         price: '$129',
         duration: '5h 45m',
         no_stops: 'Nonstop',
@@ -39,7 +39,7 @@ const query1Trips = [
         }]
     }),
     new Trip({
-        _id: 'testQuery1Trip3',
+        _id: '5e62dc3bf6a79f2b7d8f33e3',
         price: '$167',
         duration: '5h 31m',
         no_stops: 'Nonstop',
@@ -57,7 +57,7 @@ const query1Trips = [
 
 const query2Trips = [
     new Trip({
-        _id: 'testQuery2Trip1',
+        _id: '5e62dc3bf6a79f2b7d8f33e4',
         price: '$106',
         duration: '7h 20m',
         no_stops: '1 stop',
@@ -80,7 +80,7 @@ const query2Trips = [
         }]
     }),
     new Trip({
-        _id: 'testQuery2Trip2',
+        _id: '5e62dc3bf6a79f2b7d8f33e5',
         price: '$237',
         duration: '4h 41m',
         no_stops: 'Nonstop',
@@ -98,7 +98,7 @@ const query2Trips = [
 
 const query3Trips = [
     new Trip({
-        _id: 'testQuery3Trip1',
+        _id: '5e62dc3bf6a79f2b7d8f33e6',
         price: '$468',
         duration: '25h 25m',
         no_stops: '1 stop',
@@ -121,7 +121,7 @@ const query3Trips = [
         }]
     }),
     new Trip({
-        _id: 'testQuery3Trip2',
+        _id: '5e62dc3bf6a79f2b7d8f33e7',
         price: '$683',
         duration: '21h 30m',
         no_stops: '1 stop',
@@ -147,7 +147,7 @@ const query3Trips = [
 
 const query4Trips = [
     new Trip({
-        _id: 'testQuery4Trip1',
+        _id: '5e62dc3bf6a79f2b7d8f33e8',
         price: '$535',
         duration: '16h 30m',
         no_stops: '1 stop',
@@ -170,7 +170,7 @@ const query4Trips = [
         }]
     }),
     new Trip({
-        _id: 'testQuery4Trip2',
+        _id: '5e62dc3bf6a79f2b7d8f33e9',
         price: '$653',
         duration: '8h 50m',
         no_stops: 'Nonstop',
@@ -193,6 +193,7 @@ const query4Trips = [
 
 // domestic one-way
 const examplesQuery1 = new Query({
+    _id: '5e62dc3bf6a79f2b7d8f33ea',
     origin: 'SFO',
     dest: 'JFK',
     depart_date: '2020-03-22',
@@ -207,6 +208,7 @@ const examplesQuery1 = new Query({
 
 // domestic round trip
 const examplesQuery2 = new Query({
+    _id: '5e62dc3bf6a79f2b7d8f33eb',
     origin: 'LAX',
     dest: 'MIA',
     depart_date: '2020-03-22',
@@ -220,6 +222,7 @@ const examplesQuery2 = new Query({
 
 // intl one-way
 const examplesQuery3 = new Query({
+    _id: '5e62dc3bf6a79f2b7d8f33ec',
     origin: 'JFK',
     dest: 'PEK',
     depart_date: '2020-03-18',
@@ -233,6 +236,7 @@ const examplesQuery3 = new Query({
 
 // intl round trip
 const examplesQuery4 = new Query({
+    _id: '5e62dc3bf6a79f2b7d8f33ed',
     origin: 'DEL',
     dest: 'FCO',
     depart_date: '2020-03-17',

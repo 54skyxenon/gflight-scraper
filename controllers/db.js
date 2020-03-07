@@ -113,3 +113,4 @@ const getTrips = async (origin, dest, departDate, returnDate, isRoundTrip) => {
 exports.addFlights = addFlights;
 exports.getQuery = getQuery;
 exports.getTrips = getTrips;
+exports.db = db;

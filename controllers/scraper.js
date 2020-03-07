@@ -175,4 +175,7 @@ const scrape = async (origin, dest, departDate, returnDate, isRoundTrip) => {
     return scrapedData;
 }
 
-module.exports = scrape;
+exports.scrape = scrape;
+exports.getUrl = getUrl;
+exports.clickDropdowns = clickDropdowns;
+exports.getScrapedData = getScrapedData;
